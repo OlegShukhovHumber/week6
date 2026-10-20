@@ -4,7 +4,6 @@ from cadrates import DailyRate
 
 
 class TestDailyRate(unittest.TestCase):
-
     def test_normal_record(self):
         record = DailyRate("2024-01-02", {"USD": 0.75, "EUR": 0.69, "GBP": 0.59})
         self.assertEqual(record.date, (2024, 1, 2))

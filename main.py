@@ -1,12 +1,12 @@
 import sys
 
 from cadrates import (
+    LargestDailyChange,
+    MonthlyAverage,
     RateSource,
     SourceError,
-    MonthlyAverage,
-    LargestDailyChange,
 )
-from cadrates.config import SOURCE_URL, OUTPUT_PATH
+from cadrates.config import OUTPUT_PATH, SOURCE_URL
 from cadrates.report import build_summary, write_summary
 
 

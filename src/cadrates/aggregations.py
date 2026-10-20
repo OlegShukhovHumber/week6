@@ -4,7 +4,7 @@ from .config import CURRENCIES
 class Aggregation:
     """Base class: one named statistic computed over a list of DailyRate."""
 
-    key = None   # ключ в summary.json, задаётся в подклассах
+    key = None  # ключ в summary.json, задаётся в подклассах
 
     def compute(self, records):
         """Return the statistic. Every subclass must override this."""
@@ -33,8 +33,11 @@ class MonthlyAverage(Aggregation):
         for month in sorted(groups):
             result[month] = {}
             for currency in CURRENCIES:
-                values = [r.rates[currency] for r in groups[month]
-                          if r.rates[currency] is not None]
+                values = [
+                    r.rates[currency]
+                    for r in groups[month]
+                    if r.rates[currency] is not None
+                ]
                 result[month][currency] = sum(values) / len(values) if values else None
         return result
 

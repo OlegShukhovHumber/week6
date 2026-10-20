@@ -1,6 +1,6 @@
 import requests
 
-from .config import SOURCE_URL, TIMEOUT, START_DATE_T, END_DATE_T
+from .config import END_DATE_T, SOURCE_URL, START_DATE_T, TIMEOUT
 from .models import DailyRate
 
 
@@ -11,8 +11,13 @@ class SourceError(Exception):
 class RateSource:
     """Downloads exchange rates from the API and returns DailyRate objects."""
 
-    def __init__(self, url=SOURCE_URL, timeout=TIMEOUT,
-                 start_date_t=START_DATE_T, end_date_t=END_DATE_T):
+    def __init__(
+        self,
+        url=SOURCE_URL,
+        timeout=TIMEOUT,
+        start_date_t=START_DATE_T,
+        end_date_t=END_DATE_T,
+    ):
         self.url = url
         self.timeout = timeout
         self.start_date_t = start_date_t
@@ -38,7 +43,8 @@ class RateSource:
     def filter_records(self, records):
         """Keep only records whose date is inside the period."""
         return [
-            r for r in records
+            r
+            for r in records
             if r.date is not None and self.start_date_t <= r.date <= self.end_date_t
         ]
 

@@ -1,10 +1,10 @@
 from pathlib import Path
 
-START_DATE = '2024-01-01'
-END_DATE = '2024-06-30'
+START_DATE = "2024-01-01"
+END_DATE = "2024-06-30"
 
-START_DATE_T = tuple(map(int, START_DATE.split("-")))   # (2024, 1, 1)
-END_DATE_T = tuple(map(int, END_DATE.split("-")))       # (2024, 6, 30)
+START_DATE_T = tuple(map(int, START_DATE.split("-")))  # (2024, 1, 1)
+END_DATE_T = tuple(map(int, END_DATE.split("-")))  # (2024, 6, 30)
 
 CURRENCIES = ["USD", "EUR", "GBP"]
 BASE_CURRENCY = "CAD"

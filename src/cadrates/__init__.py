@@ -1,7 +1,7 @@
+from .aggregations import Aggregation, LargestDailyChange, MonthlyAverage
 from .models import DailyRate
-from .sources import RateSource, SourceError
-from .aggregations import Aggregation, MonthlyAverage, LargestDailyChange
 from .report import build_summary, write_summary
+from .sources import RateSource, SourceError
 
 __all__ = [
     "DailyRate",
