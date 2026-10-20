@@ -4,7 +4,7 @@ from typing import Any
 
 import requests
 
-from .config import END_DATE_T, SOURCE_URL, START_DATE_T, TIMEOUT, DateTuple
+from .config import DateTuple, Settings
 from .errors import ResponseFormatError, SourceError
 from .models import DailyRate
 
@@ -16,15 +16,25 @@ class RateSource:
 
     def __init__(
         self,
-        url: str = SOURCE_URL,
-        timeout: float = TIMEOUT,
-        start_date_t: DateTuple = START_DATE_T,
-        end_date_t: DateTuple = END_DATE_T,
+        url: str,
+        timeout: float,
+        start_date_t: DateTuple,
+        end_date_t: DateTuple,
     ) -> None:
         self.url = url
         self.timeout = timeout
         self.start_date_t = start_date_t
         self.end_date_t = end_date_t
+
+    @classmethod
+    def from_settings(cls, settings: Settings) -> "RateSource":
+        """Build a source from the settings file."""
+        return cls(
+            url=settings.source_url,
+            timeout=settings.timeout,
+            start_date_t=settings.start_date_t,
+            end_date_t=settings.end_date_t,
+        )
 
     def fetch_raw(self) -> Any:
         """Download the JSON response."""

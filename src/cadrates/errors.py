@@ -15,3 +15,7 @@ class ResponseFormatError(CadRatesError):
 
 class OutputError(CadRatesError):
     """A result file could not be written."""
+
+
+class SettingsError(CadRatesError):
+    """The settings file is missing, unreadable or incomplete."""

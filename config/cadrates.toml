@@ -1,0 +1,19 @@
+# Every setting the program reads. Pass another file with --config.
+
+# Where the exchange rates come from, and the period we keep (inclusive).
+source_url = "https://api.frankfurter.dev/v1/2024-01-01..2024-06-30?from=CAD&to=USD,EUR,GBP"
+start_date = "2024-01-01"
+end_date = "2024-06-30"
+
+# Seconds to wait for the API before giving up.
+timeout = 10
+
+# Folder that receives summary.json and run_info.json.
+output_dir = "data/processed"
+
+# Reproducibility: the seed and size of the featured sample.
+seed = 42
+sample_size = 5
+
+# DEBUG, INFO, WARNING, ERROR or CRITICAL.
+log_level = "INFO"

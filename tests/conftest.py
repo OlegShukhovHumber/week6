@@ -1,8 +1,9 @@
+import json
 import logging
 
 import pytest
 
-from cadrates import DailyRate, sources
+from cadrates import DailyRate, Settings, sources
 
 
 class FakeResponse:
@@ -71,3 +72,42 @@ def restore_package_logger():
     yield
     logger.setLevel(level)
     logger.handlers[:] = handlers
+
+
+@pytest.fixture
+def settings(tmp_path):
+    """Settings that write into a temporary folder."""
+    return Settings(
+        source_url="https://example.invalid/rates",
+        start_date="2024-01-01",
+        end_date="2024-06-30",
+        timeout=1.0,
+        output_dir=tmp_path / "out",
+        seed=7,
+        sample_size=2,
+        log_level="INFO",
+    )
+
+
+@pytest.fixture
+def write_config(tmp_path):
+    """Write a settings file into tmp_path; override or drop settings per test."""
+
+    def write(*, drop=(), **overrides):
+        values = {
+            "source_url": "https://example.invalid/rates",
+            "start_date": "2024-01-01",
+            "end_date": "2024-06-30",
+            "timeout": 5,
+            "output_dir": (tmp_path / "out").as_posix(),
+            "seed": 7,
+            "sample_size": 2,
+            "log_level": "INFO",
+        }
+        values.update(overrides)
+        lines = [f"{k} = {json.dumps(v)}" for k, v in values.items() if k not in drop]
+        path = tmp_path / "cadrates.toml"
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return path
+
+    return write

@@ -15,7 +15,9 @@ URL = "https://example.invalid/rates"
 
 
 def make_source():
-    return RateSource(url=URL, timeout=1)
+    return RateSource(
+        url=URL, timeout=1, start_date_t=(2024, 1, 1), end_date_t=(2024, 6, 30)
+    )
 
 
 def test_a_failed_download_raises_a_source_error(fake_api):

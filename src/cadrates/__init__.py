@@ -1,5 +1,12 @@
 from .aggregations import Aggregation, LargestDailyChange, MonthlyAverage
-from .errors import CadRatesError, OutputError, ResponseFormatError, SourceError
+from .config import Settings, load_settings
+from .errors import (
+    CadRatesError,
+    OutputError,
+    ResponseFormatError,
+    SettingsError,
+    SourceError,
+)
 from .models import DailyRate
 from .report import build_summary, write_summary
 from .sources import RateSource
@@ -11,6 +18,9 @@ __all__ = [
     "SourceError",
     "ResponseFormatError",
     "OutputError",
+    "SettingsError",
+    "Settings",
+    "load_settings",
     "Aggregation",
     "MonthlyAverage",
     "LargestDailyChange",
