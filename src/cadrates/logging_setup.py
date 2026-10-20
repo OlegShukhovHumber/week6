@@ -8,16 +8,20 @@ HANDLER_NAME = "cadrates-stderr"
 
 
 def configure_logging(level: str | int = "INFO") -> None:
-    """Send the package's log messages to stderr at the given level.
+    """Send log messages to stderr at the given level.
 
-    Calling it again replaces the handler instead of adding a second one.
+    The handler sits on the root logger because a module run with
+    ``python -m cadrates.main`` is named ``__main__``, not ``cadrates.main``.
+    Calling this again replaces the handler instead of adding a second one.
     """
-    logger = logging.getLogger("cadrates")
-    for handler in list(logger.handlers):
+    root = logging.getLogger()
+    for handler in list(root.handlers):
         if handler.get_name() == HANDLER_NAME:
-            logger.removeHandler(handler)
+            root.removeHandler(handler)
     handler = logging.StreamHandler(sys.stderr)
     handler.set_name(HANDLER_NAME)
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
-    logger.addHandler(handler)
-    logger.setLevel(level.upper() if isinstance(level, str) else level)
+    root.addHandler(handler)
+    root.setLevel(level.upper() if isinstance(level, str) else level)
+    # urllib3 is chatty at DEBUG and we only want our own messages.
+    logging.getLogger("urllib3").setLevel(logging.WARNING)

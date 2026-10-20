@@ -67,11 +67,12 @@ def fake_api(monkeypatch):
 @pytest.fixture(autouse=True)
 def restore_package_logger():
     """configure_logging changes global state; put it back after every test."""
-    logger = logging.getLogger("cadrates")
-    level, handlers = logger.level, list(logger.handlers)
+    root, urllib3 = logging.getLogger(), logging.getLogger("urllib3")
+    level, handlers, urllib3_level = root.level, list(root.handlers), urllib3.level
     yield
-    logger.setLevel(level)
-    logger.handlers[:] = handlers
+    root.setLevel(level)
+    root.handlers[:] = handlers
+    urllib3.setLevel(urllib3_level)
 
 
 @pytest.fixture
