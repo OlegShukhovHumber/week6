@@ -1,14 +1,23 @@
 import json
 import logging
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
 
+from .aggregations import Aggregation
 from .errors import OutputError
+from .models import DailyRate
 
 logger = logging.getLogger(__name__)
 
 
-def build_summary(source_url, records, aggregations):
+def build_summary(
+    source_url: str,
+    records: Sequence[DailyRate],
+    aggregations: Sequence[Aggregation],
+) -> dict[str, Any]:
     """Build the summary dict by running every aggregation over the records."""
-    summary = {
+    summary: dict[str, Any] = {
         "source_url": source_url,
         "records_processed": len(records),
     }
@@ -18,7 +27,7 @@ def build_summary(source_url, records, aggregations):
     return summary
 
 
-def write_summary(summary, path):
+def write_summary(summary: Mapping[str, Any], path: Path) -> None:
     """Write the summary to a JSON file, creating the folder if needed."""
     try:
         path.parent.mkdir(parents=True, exist_ok=True)

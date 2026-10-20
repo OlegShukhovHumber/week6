@@ -1,22 +1,29 @@
 import logging
+from collections.abc import Mapping, Sequence
+from typing import ClassVar
 
-from .config import CURRENCIES
+from .config import CURRENCIES, DateTuple
+from .models import DailyRate
 
 logger = logging.getLogger(__name__)
+
+MonthlyStats = Mapping[int, Mapping[str, float | None]]
 
 
 class Aggregation:
     """Base class: one named statistic computed over a list of DailyRate."""
 
-    key = None  # ключ в summary.json, задаётся в подклассах
+    key: ClassVar[str] = ""
 
-    def compute(self, records):
+    def compute(self, records: Sequence[DailyRate]) -> MonthlyStats:
         """Return the statistic. Every subclass must override this."""
         raise NotImplementedError
 
-    def _group_by_month(self, records):
+    def _group_by_month(
+        self, records: Sequence[DailyRate]
+    ) -> dict[int, list[DailyRate]]:
         """Return {month: [records of that month]}, skipping records without a date."""
-        groups = {}
+        groups: dict[int, list[DailyRate]] = {}
         for record in records:
             if record.month is None:
                 continue
@@ -32,17 +39,17 @@ class MonthlyAverage(Aggregation):
 
     key = "monthly_average"
 
-    def compute(self, records):
+    def compute(self, records: Sequence[DailyRate]) -> MonthlyStats:
         groups = self._group_by_month(records)
-        result = {}
+        result: dict[int, dict[str, float | None]] = {}
         for month in sorted(groups):
             result[month] = {}
             for currency in CURRENCIES:
-                values = [
-                    r.rates[currency]
-                    for r in groups[month]
-                    if r.rates[currency] is not None
-                ]
+                values: list[float] = []
+                for record in groups[month]:
+                    rate = record.rates[currency]
+                    if rate is not None:
+                        values.append(rate)
                 result[month][currency] = sum(values) / len(values) if values else None
         return result
 
@@ -52,15 +59,17 @@ class LargestDailyChange(Aggregation):
 
     key = "largest_daily_change"
 
-    def _get_date(self, record):
+    def _get_date(self, record: DailyRate) -> DateTuple:
+        # Records are grouped by month, so every record here has a date.
+        assert record.date is not None
         return record.date
 
-    def compute(self, records):
+    def compute(self, records: Sequence[DailyRate]) -> MonthlyStats:
         groups = self._group_by_month(records)
-        result = {}
+        result: dict[int, dict[str, float]] = {}
         for month in sorted(groups):
             days = sorted(groups[month], key=self._get_date)
-            max_change = {currency: 0 for currency in CURRENCIES}
+            max_change: dict[str, float] = {currency: 0 for currency in CURRENCIES}
 
             for i in range(len(days) - 1):
                 today = days[i]

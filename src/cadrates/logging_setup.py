@@ -7,7 +7,7 @@ LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 HANDLER_NAME = "cadrates-stderr"
 
 
-def configure_logging(level="INFO"):
+def configure_logging(level: str | int = "INFO") -> None:
     """Send the package's log messages to stderr at the given level.
 
     Calling it again replaces the handler instead of adding a second one.

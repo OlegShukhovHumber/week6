@@ -1,8 +1,10 @@
 import logging
+from collections.abc import Sequence
+from typing import Any
 
 import requests
 
-from .config import END_DATE_T, SOURCE_URL, START_DATE_T, TIMEOUT
+from .config import END_DATE_T, SOURCE_URL, START_DATE_T, TIMEOUT, DateTuple
 from .errors import ResponseFormatError, SourceError
 from .models import DailyRate
 
@@ -14,17 +16,17 @@ class RateSource:
 
     def __init__(
         self,
-        url=SOURCE_URL,
-        timeout=TIMEOUT,
-        start_date_t=START_DATE_T,
-        end_date_t=END_DATE_T,
-    ):
+        url: str = SOURCE_URL,
+        timeout: float = TIMEOUT,
+        start_date_t: DateTuple = START_DATE_T,
+        end_date_t: DateTuple = END_DATE_T,
+    ) -> None:
         self.url = url
         self.timeout = timeout
         self.start_date_t = start_date_t
         self.end_date_t = end_date_t
 
-    def fetch_raw(self):
+    def fetch_raw(self) -> Any:
         """Download the JSON response."""
         logger.info("Downloading rates from %s", self.url)
         try:
@@ -39,13 +41,13 @@ class RateSource:
                 f"The response from {self.url} is not valid JSON"
             ) from error
 
-    def build_records(self, raw):
+    def build_records(self, raw: Any) -> list[DailyRate]:
         """Turn the raw JSON into a list of DailyRate objects."""
         if not isinstance(raw, dict) or not isinstance(raw.get("rates"), dict):
             raise ResponseFormatError(
                 "Unexpected response format: expected an object with a 'rates' object"
             )
-        records = []
+        records: list[DailyRate] = []
         for day, values in raw["rates"].items():
             if not isinstance(values, dict):
                 raise ResponseFormatError(
@@ -59,7 +61,7 @@ class RateSource:
         logger.debug("Built %d records from the response", len(records))
         return records
 
-    def filter_records(self, records):
+    def filter_records(self, records: Sequence[DailyRate]) -> list[DailyRate]:
         """Keep only records whose date is inside the period."""
         kept = [
             r
@@ -69,7 +71,7 @@ class RateSource:
         logger.debug("Kept %d of %d records inside the period", len(kept), len(records))
         return kept
 
-    def fetch(self):
+    def fetch(self) -> list[DailyRate]:
         """Download, build and filter the records."""
         raw = self.fetch_raw()
         records = self.build_records(raw)
