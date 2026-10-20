@@ -1,11 +1,8 @@
 import requests
 
 from .config import END_DATE_T, SOURCE_URL, START_DATE_T, TIMEOUT
+from .errors import ResponseFormatError, SourceError
 from .models import DailyRate
-
-
-class SourceError(Exception):
-    """Raised when the exchange rates cannot be downloaded or read."""
 
 
 class RateSource:
@@ -28,17 +25,29 @@ class RateSource:
         try:
             response = requests.get(self.url, timeout=self.timeout)
             response.raise_for_status()
+        except requests.RequestException as error:
+            raise SourceError(f"Could not reach {self.url}: {error}") from error
+        try:
             return response.json()
-        except (requests.RequestException, ValueError) as error:
-            raise SourceError(str(error))
+        except ValueError as error:
+            raise ResponseFormatError(
+                f"The response from {self.url} is not valid JSON"
+            ) from error
 
     def build_records(self, raw):
         """Turn the raw JSON into a list of DailyRate objects."""
-        try:
-            rates = raw["rates"]
-        except (KeyError, TypeError):
-            raise SourceError("unexpected response format")
-        return [DailyRate(day, values) for day, values in rates.items()]
+        if not isinstance(raw, dict) or not isinstance(raw.get("rates"), dict):
+            raise ResponseFormatError(
+                "Unexpected response format: expected an object with a 'rates' object"
+            )
+        records = []
+        for day, values in raw["rates"].items():
+            if not isinstance(values, dict):
+                raise ResponseFormatError(
+                    f"Unexpected response format: the rates for {day} are not an object"
+                )
+            records.append(DailyRate(day, values))
+        return records
 
     def filter_records(self, records):
         """Keep only records whose date is inside the period."""
