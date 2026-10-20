@@ -10,7 +10,8 @@ from cadrates import (
 )
 from cadrates.config import DEFAULT_CONFIG_PATH
 from cadrates.logging_setup import configure_logging
-from cadrates.report import build_summary, write_summary
+from cadrates.report import build_summary, pick_featured_days, write_summary
+from cadrates.run_info import build_run_info, write_run_info
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,12 @@ def main():
         records = RateSource.from_settings(settings).fetch()
         logger.debug("%d records arrived", len(records))
         aggregations = [MonthlyAverage(), LargestDailyChange()]
-        summary = build_summary(settings.source_url, records, aggregations)
+        featured = pick_featured_days(records, settings.seed, settings.sample_size)
+        summary = build_summary(
+            settings.source_url, records, aggregations, featured_days=featured
+        )
         write_summary(summary, settings.summary_path)
+        write_run_info(build_run_info(settings), settings.run_info_path)
     except CadRatesError as error:
         logger.error("The run failed: %s", error)
         print(f"Error: {error}", file=sys.stderr)

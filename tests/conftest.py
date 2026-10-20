@@ -111,3 +111,12 @@ def write_config(tmp_path):
         return path
 
     return write
+
+
+@pytest.fixture
+def many_records():
+    """Twenty hand-made January days, enough to see a seed make a difference."""
+    return [
+        DailyRate(f"2024-01-{day:02d}", {"USD": 0.7, "EUR": 0.6, "GBP": 0.5})
+        for day in range(1, 21)
+    ]
