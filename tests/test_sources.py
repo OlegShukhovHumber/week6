@@ -1,8 +1,11 @@
+import logging
+
 import pytest
 import requests
 
 from cadrates import (
     CadRatesError,
+    DailyRate,
     RateSource,
     ResponseFormatError,
     SourceError,
@@ -51,9 +54,21 @@ def test_filter_records_keeps_only_the_period(api_payload):
 
 
 def test_filter_records_drops_records_with_a_bad_date():
-    source = make_source()
-    bad = source.build_records({"rates": {"oops": {"USD": 1}}})
-    assert source.filter_records(bad) == []
+    assert make_source().filter_records([DailyRate("oops", {"USD": 1})]) == []
+
+
+def test_build_records_skips_a_bad_date_and_logs_a_warning(caplog):
+    with caplog.at_level(logging.WARNING, logger="cadrates"):
+        records = make_source().build_records({"rates": {"oops": {"USD": 1}}})
+    assert records == []
+    assert "Skipping record with an unreadable date: 'oops'" in caplog.text
+
+
+def test_fetch_logs_a_milestone_at_info_level(fake_api, api_payload, caplog):
+    fake_api(api_payload)
+    with caplog.at_level(logging.INFO, logger="cadrates"):
+        make_source().fetch()
+    assert "Fetched 3 records for the period" in caplog.text
 
 
 def test_fetch_downloads_builds_and_filters(fake_api, api_payload):

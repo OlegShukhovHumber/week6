@@ -1,8 +1,12 @@
+import logging
+
 import requests
 
 from .config import END_DATE_T, SOURCE_URL, START_DATE_T, TIMEOUT
 from .errors import ResponseFormatError, SourceError
 from .models import DailyRate
+
+logger = logging.getLogger(__name__)
 
 
 class RateSource:
@@ -22,6 +26,7 @@ class RateSource:
 
     def fetch_raw(self):
         """Download the JSON response."""
+        logger.info("Downloading rates from %s", self.url)
         try:
             response = requests.get(self.url, timeout=self.timeout)
             response.raise_for_status()
@@ -46,19 +51,28 @@ class RateSource:
                 raise ResponseFormatError(
                     f"Unexpected response format: the rates for {day} are not an object"
                 )
-            records.append(DailyRate(day, values))
+            record = DailyRate(day, values)
+            if record.date is None:
+                logger.warning("Skipping record with an unreadable date: %r", day)
+                continue
+            records.append(record)
+        logger.debug("Built %d records from the response", len(records))
         return records
 
     def filter_records(self, records):
         """Keep only records whose date is inside the period."""
-        return [
+        kept = [
             r
             for r in records
             if r.date is not None and self.start_date_t <= r.date <= self.end_date_t
         ]
+        logger.debug("Kept %d of %d records inside the period", len(kept), len(records))
+        return kept
 
     def fetch(self):
         """Download, build and filter the records."""
         raw = self.fetch_raw()
         records = self.build_records(raw)
-        return self.filter_records(records)
+        kept = self.filter_records(records)
+        logger.info("Fetched %d records for the period", len(kept))
+        return kept

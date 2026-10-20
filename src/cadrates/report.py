@@ -1,6 +1,9 @@
 import json
+import logging
 
 from .errors import OutputError
+
+logger = logging.getLogger(__name__)
 
 
 def build_summary(source_url, records, aggregations):
@@ -10,6 +13,7 @@ def build_summary(source_url, records, aggregations):
         "records_processed": len(records),
     }
     for aggregation in aggregations:
+        logger.debug("Computing %s", aggregation.key)
         summary[aggregation.key] = aggregation.compute(records)
     return summary
 
@@ -22,3 +26,4 @@ def write_summary(summary, path):
             json.dump(summary, file, indent=2, ensure_ascii=False)
     except OSError as error:
         raise OutputError(f"Could not write {path}: {error}") from error
+    logger.info("Wrote %s", path)

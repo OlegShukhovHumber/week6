@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 
 from cadrates import DailyRate, sources
@@ -59,3 +61,13 @@ def fake_api(monkeypatch):
         monkeypatch.setattr(sources.requests, "get", fake_get)
 
     return install
+
+
+@pytest.fixture(autouse=True)
+def restore_package_logger():
+    """configure_logging changes global state; put it back after every test."""
+    logger = logging.getLogger("cadrates")
+    level, handlers = logger.level, list(logger.handlers)
+    yield
+    logger.setLevel(level)
+    logger.handlers[:] = handlers

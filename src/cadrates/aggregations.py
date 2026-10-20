@@ -1,4 +1,8 @@
+import logging
+
 from .config import CURRENCIES
+
+logger = logging.getLogger(__name__)
 
 
 class Aggregation:
@@ -19,6 +23,7 @@ class Aggregation:
             if record.month not in groups:
                 groups[record.month] = []
             groups[record.month].append(record)
+        logger.debug("Grouped %d records into %d months", len(records), len(groups))
         return groups
 
 

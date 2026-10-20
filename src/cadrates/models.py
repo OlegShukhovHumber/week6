@@ -1,4 +1,8 @@
+import logging
+
 from .config import CURRENCIES
+
+logger = logging.getLogger(__name__)
 
 
 class DailyRate:
@@ -20,6 +24,7 @@ class DailyRate:
         try:
             return float(value)
         except (TypeError, ValueError):
+            logger.debug("Could not read a rate from %r", value)
             return None
 
     def __str__(self):
